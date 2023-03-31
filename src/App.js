@@ -29,6 +29,7 @@ function App() {
       </div>
       <div className="content">
         <h1 className="title">AI Language Tutor</h1>
+        <p>Pick a theme to learn about and press <i>Start</i>. This may take a few seconds.</p>
         <div className="chat-box-container">
           <ChatBox mode={mode} resetMessages={resetMessages} onResetComplete={handleResetComplete} />
         </div>

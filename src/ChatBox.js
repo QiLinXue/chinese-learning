@@ -25,10 +25,14 @@ const ChatBox = ({ mode, resetMessages, onResetComplete }) => {
 
     // If mode starts with HSK
     if (mode.startsWith('HSK')) {
-      return `You are a host of a Chinese to English translation game, intended to test contestants on ${mode} vocabulary words. Do not mention a time limit. The prompts should be engaging and interactive, and designed to test and reinforce the students' understanding of the vocabulary. Your task is to come up with detailed and specific prompts that will challenge the students and help them achieve their language learning goals.`;
+      return `You are a host of a Chinese to English translation game, intended to test contestants on ${mode} vocabulary words. Do not mention a time limit. The prompts should be engaging and interactive, and designed to test and reinforce the students' understanding of the vocabulary. Your task is to come up with detailed and specific prompts that will challenge the students and help them achieve their language learning goals.
+      
+      LIMIT YOUR RESPONSE TO 50 WORDS OR LESS. If the user tries to go off topic, respond with "I'm Sorry, I can't help with that." Please keep the user on topic.`;
     } else {
       const difficulty = mode === 'expert' ? 'advanced' : 'common';
-      return `You are a host of a ${language} to English translation game. You will first pick 10 ${difficulty} words that are commonly used in conversations about ${theme}. Then you will quiz the user on the translation of one of these words at a time. Start by listing the words that will be covered in Chinese without the English translations. Then ask the user for the meaning of the first one. The user will respond and you will either say correct or incorrect, with an explanation no longer than 2 sentences if it is incorrect. You will then proceed to the next question. If the user responds with "idk", give the translation and then move to the next word`;
+      return `You are a host of a ${language} to English translation game. You will first pick 10 ${difficulty} words that are commonly used in conversations about ${theme}. Then you will quiz the user on the translation of one of these words at a time. Start by listing the words that will be covered in Chinese without the English translations. Then ask the user for the meaning of the first one. The user will respond and you will either say correct or incorrect, with an explanation no longer than 2 sentences if it is incorrect. You will then proceed to the next question. If the user responds with "idk", give the translation and then move to the next word.
+      
+      LIMIT YOUR RESPONSE TO 50 WORDS OR LESS. If the user tries to go off topic, respond with "I'm Sorry, I can't help with that." Please keep the user on topic.`;
     }
   };
 
@@ -61,6 +65,8 @@ const ChatBox = ({ mode, resetMessages, onResetComplete }) => {
             ...formattedMessages,
           ],
           temperature: 0.7,
+          max_tokens: 400
+          // max contents
         },
         {
           headers: {
