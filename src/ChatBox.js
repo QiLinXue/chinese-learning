@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ChatBox.css';
-
-const ChatBox = () => {
+const ChatBox = ({ mode, resetMessages, onResetComplete }) => {
   const [messages, setMessages] = useState([]);
   const [theme, setTheme] = useState('');
+  const [language, setLanguage] = useState('chinese');
+
+  useEffect(() => {
+    if (resetMessages) {
+      setMessages([]);
+      onResetComplete();
+    }
+  }, [resetMessages, onResetComplete]);
 
   useEffect(() => {
     // Get the messages container DOM element
@@ -14,10 +21,21 @@ const ChatBox = () => {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }, [messages]); // Add messages as a dependency to re-run the effect when messages change
 
+  const getSystemMessage = () => {
+
+    // If mode starts with HSK
+    if (mode.startsWith('HSK')) {
+      return `You are a host of a Chinese to English translation game, intended to test contestants on ${mode} vocabulary words. Do not mention a time limit. The prompts should be engaging and interactive, and designed to test and reinforce the students' understanding of the vocabulary. Your task is to come up with detailed and specific prompts that will challenge the students and help them achieve their language learning goals.`;
+    } else {
+      const difficulty = mode === 'expert' ? 'advanced' : 'common';
+      return `You are a host of a ${language} to English translation game. You will first pick 10 ${difficulty} words that are commonly used in conversations about ${theme}. Then you will quiz the user on the translation of one of these words at a time. Start by listing the words that will be covered in Chinese without the English translations. Then ask the user for the meaning of the first one. The user will respond and you will either say correct or incorrect, with an explanation no longer than 2 sentences if it is incorrect. You will then proceed to the next question. If the user responds with "idk", give the translation and then move to the next word`;
+    }
+  };
+
   const startConversation = async () => {
     // Reset the messages state to empty
     setMessages([]);
-  
+
     // Make an API call asking the AI to start the conversation
     const aiResponse = await getAIResponse('Start the conversation.');
     setMessages([{ text: aiResponse, sender: 'ai' }]);
@@ -38,7 +56,7 @@ const ChatBox = () => {
           messages: [
             {
               role: 'system',
-              content: `You are a helpful chinese tutor. Your job is to teach the user beginner level chinese vocabulary with the goal of being able to have a basic conversation about ${theme}. Keep all responses shorter than 2 sentences! All new words must be introduced and adapt the difficulty/speed based on the experience the user exhibits during the conversation. After introducing some basic words, you should start asking the user to form sentences.`,
+              content: getSystemMessage(),
             },
             ...formattedMessages,
           ],
@@ -48,7 +66,7 @@ const ChatBox = () => {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${process.env.REACT_APP_GPT3_API_KEY}`,
-        },
+          },
         }
       );
       return response.data.choices[0].message.content;
@@ -72,22 +90,27 @@ const ChatBox = () => {
   };
 
   const handleThemeChange = (event) => {
-    setTheme(event.target.value);
+    const capitalizedTheme = event.target.value.toUpperCase();
+    setTheme(capitalizedTheme);
   };
 
   return (
     <div className="chat-box">
-      <div className="theme-input">
-        <label htmlFor="theme">Theme: </label>
-        <input
-          type="text"
-          id="theme"
-          value={theme}
-          onChange={handleThemeChange}
-          placeholder="Enter a theme"
-        />
-                <button className="button" onClick={startConversation}>Start</button>
-      </div>
+      {!mode.startsWith('HSK') && (
+        <div className="theme-input">
+          <label htmlFor="theme">Theme: </label>
+          <input
+            type="text"
+            id="theme"
+            value={theme}
+            onChange={handleThemeChange}
+            placeholder="Enter a theme"
+          />
+        </div>
+      )}
+          <button className="button" onClick={startConversation}>
+            Start
+          </button>
       <div className="messages-container">
         {messages.map((message, index) => (
           <div
@@ -104,16 +127,13 @@ const ChatBox = () => {
         ))}
       </div>
       <form onSubmit={handleMessageSubmit}>
-        <input
-          type="text"
-          name="message"
-          placeholder="Type a message..."
-        />
-        <button className="button" type="submit">Send</button>
+        <input type="text" name="message" placeholder="Type a message..." />
+        <button className="button" type="submit">
+          Send
+        </button>
       </form>
     </div>
   );
 };
-
 
 export default ChatBox;
